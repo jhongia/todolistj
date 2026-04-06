@@ -5,11 +5,17 @@ const { urlencoded } = require('body-parser');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const dotenv = require('dotenv').config();
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const username = process.env.USERNAME;
 const password = process.env.PASS;
 const address = process.env.ADDRESS;
+
+const deleteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 delete requests per windowMs
+});
 
 app.set('view engine', 'ejs');
 
@@ -107,7 +113,7 @@ app.post("/", function(req, res){
   }
 });
 
-app.post('/delete', (req, res) => {
+app.post('/delete', deleteLimiter, (req, res) => {
   const checkedItemId = req.body.checkbox;
   const listName = req.body.listName;
 
