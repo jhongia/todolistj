@@ -123,11 +123,33 @@ app.post("/", function(req, res){
   }
 });
 
+function sanitizeListName(rawName) {
+  if (typeof rawName !== 'string') {
+    return null;
+  }
+
+  const trimmed = rawName.trim();
+
+  // Allow only letters, numbers, spaces, and basic punctuation used in list names.
+  // Disallow characters that could lead to protocol-relative or absolute URLs.
+  const isValid = /^[A-Za-z0-9 _-]{1,100}$/.test(trimmed);
+
+  if (!isValid) {
+    return null;
+  }
+
+  return trimmed;
+}
+
 app.post('/delete', deleteLimiter, (req, res) => {
   const checkedItemId = req.body.checkbox;
-  const listName = req.body.listName;
+  const safeListName = sanitizeListName(req.body.listName);
 
-  if (listName === 'Today') {
+  if (!safeListName) {
+    return res.redirect('/');
+  }
+
+  if (safeListName === 'Today') {
     Item.findByIdAndRemove(checkedItemId, (err) => {
       if (!err) {
         console.log('Successfully deleted checked item.');
@@ -135,11 +157,15 @@ app.post('/delete', deleteLimiter, (req, res) => {
       }
     });
   } else {
-    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}, (err, foundList) => {
-      if (!err) {
-        res.redirect('/' + listName);
+    List.findOneAndUpdate(
+      {name: safeListName},
+      {$pull: {items: {_id: checkedItemId}}},
+      (err, foundList) => {
+        if (!err) {
+          res.redirect('/' + safeListName);
+        }
       }
-    });
+    );
   }
 });
 
