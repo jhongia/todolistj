@@ -107,7 +107,7 @@ app.get('/:customListName', generalLimiter, (req, res) => {
   
 });
 
-app.post("/", function(req, res){
+app.post("/", generalLimiter, function(req, res){
 
   const itemName = req.body.newItem;
   const safeListName = sanitizeListName(req.body.list);
