@@ -51,6 +51,11 @@ const listSchema = {
 
 const List = mongoose.model('List', listSchema);
 
+function isValidListName(name) {
+  // Allow only letters, numbers, spaces, underscores, and hyphens
+  return typeof name === 'string' && /^[A-Za-z0-9 _-]+$/.test(name);
+}
+
 app.get("/", function(req, res) {
 
   Item.find({}, (err, foundItems) => {
@@ -72,6 +77,10 @@ app.get("/", function(req, res) {
 app.get('/:customListName', (req, res) => {
   const customListName = _.capitalize(req.params.customListName);
 
+  if (!isValidListName(customListName)) {
+    return res.redirect('/');
+  }
+
   List.findOne({name: customListName}, (err, foundList) =>{
     if (!err) {
       if (!foundList) {
@@ -81,6 +90,7 @@ app.get('/:customListName', (req, res) => {
         });
       
         list.save();
+
         res.redirect('/' + customListName);
       } else {
         res.render('list', {listTitle: foundList.name, newListItems: foundList.items});
