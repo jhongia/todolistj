@@ -79,7 +79,7 @@ app.get("/", generalLimiter, function(req, res) {
 
 });
 
-app.get('/:customListName', (req, res) => {
+app.get('/:customListName', generalLimiter, (req, res) => {
   const customListName = _.capitalize(req.params.customListName);
 
   if (!isValidListName(customListName)) {
