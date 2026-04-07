@@ -147,11 +147,28 @@ function sanitizeListName(rawName) {
   return trimmed;
 }
 
+function sanitizeItemId(rawId) {
+  if (typeof rawId !== 'string') {
+    return null;
+  }
+
+  const trimmed = rawId.trim();
+
+  // Expect a 24-character hexadecimal MongoDB ObjectId string.
+  const isValid = /^[a-fA-F0-9]{24}$/.test(trimmed);
+
+  if (!isValid) {
+    return null;
+  }
+
+  return trimmed;
+}
+
 app.post('/delete', deleteLimiter, (req, res) => {
-  const checkedItemId = req.body.checkbox;
+  const checkedItemId = sanitizeItemId(req.body.checkbox);
   const safeListName = sanitizeListName(req.body.listName);
 
-  if (!safeListName) {
+  if (!safeListName || !checkedItemId) {
     return res.redirect('/');
   }
 
