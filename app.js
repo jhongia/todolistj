@@ -81,7 +81,14 @@ app.get('/:customListName', (req, res) => {
         });
       
         list.save();
-        res.redirect('/' + customListName);
+
+        // Ensure we only redirect to a safe local path segment derived from customListName
+        const safeCustomListName = customListName
+          .replace(/\//g, '')
+          .replace(/\\/g, '')
+          .replace(/\.\./g, '');
+
+        res.redirect('/' + safeCustomListName);
       } else {
         res.render('list', {listTitle: foundList.name, newListItems: foundList.items});
       }
