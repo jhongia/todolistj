@@ -17,6 +17,11 @@ const deleteLimiter = rateLimit({
   max: 100, // limit each IP to 100 delete requests per windowMs
 });
 
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // limit each IP to 300 general requests per windowMs
+});
+
 app.set('view engine', 'ejs');
 
 app.use(urlencoded({extended: true}));
@@ -56,7 +61,7 @@ function isValidListName(name) {
   return typeof name === 'string' && /^[A-Za-z0-9 _-]+$/.test(name);
 }
 
-app.get("/", function(req, res) {
+app.get("/", generalLimiter, function(req, res) {
 
   Item.find({}, (err, foundItems) => {
 
